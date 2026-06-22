@@ -22,18 +22,21 @@ def tts():
     try:
         data = request.json or {}
         text = data.get("text", "").strip()
-        voice = data.get("voice", "") # Ab hum direct voice code lenge
+        voice = data.get("voice", "") 
 
         if not text:
             return jsonify({"error": "Text is required"}), 400
         if not voice:
             return jsonify({"error": "Voice is required"}), 400
 
-        # Async function ko sync Flask mein chalane ka tareeqa
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        # Serverless friendly tareeqa event loop chalane ka
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
         audio_fp = loop.run_until_complete(generate_edge_voice(text, voice))
-        loop.close()
 
         return send_file(
             audio_fp, 
@@ -47,6 +50,9 @@ def tts():
 @app.route("/")
 def home():
     return jsonify({"status": "Edge-TTS VIP API running"})
+
+# Vercel ko server instance batane ke liye
+app.index = lambda: "Backend is running!"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
