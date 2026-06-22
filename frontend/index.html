@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP Edge Voice Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-linear-to-br from-slate-900 to-indigo-950 min-h-screen flex items-center justify-center p-4 antialiased text-slate-100">
+
+  <div class="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/10">
+    
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-full mb-3 shadow-lg shadow-indigo-500/50">
+        <i class="fa-solid fa-wand-magic-sparkles text-2xl text-white"></i>
+      </div>
+      <h1 class="text-2xl font-bold bg-linear-to-r from-white to-slate-400 bg-clip-text text-transparent">VIP AI Voice Generator</h1>
+      <p class="text-xs text-slate-400 mt-1">10 Realistic Male & Female AI Voices</p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Enter Text</label>
+        <textarea id="text" rows="4" class="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-3 text-slate-200 placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-all" placeholder="Yahan apna text likhein..."></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Select Voice Artist</label>
+        <div class="relative">
+          <select id="voice_select" class="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-3 text-slate-200 appearance-none focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition-all">
+            
+            <optgroup label="Urdu (Pakistan)" class="bg-slate-900 text-indigo-400 font-semibold">
+              <option value="ur-PK-UzmaNeural" class="bg-slate-900 text-slate-200">🇵🇰 Uzma - Female (Natural Urdu)</option>
+              <option value="ur-PK-AsadNeural" class="bg-slate-900 text-slate-200">🇵🇰 Asad - Male (Clear Urdu)</option>
+            </optgroup>
+            
+            <optgroup label="English (Different Genders & Accents)" class="bg-slate-900 text-indigo-400 font-semibold">
+              <option value="en-US-AriaNeural" class="bg-slate-900 text-slate-200">🇺🇸 Aria - Female (US News Style)</option>
+              <option value="en-US-GuyNeural" class="bg-slate-900 text-slate-200">🇺🇸 Guy - Male (US Deep Voice)</option>
+              <option value="en-GB-SoniaNeural" class="bg-slate-900 text-slate-200">🇬🇧 Sonia - Female (UK British)</option>
+              <option value="en-GB-RyanNeural" class="bg-slate-900 text-slate-200">🇬🇧 Ryan - Male (UK Professional)</option>
+              <option value="en-IN-NeerjaNeural" class="bg-slate-900 text-slate-200">🇮🇳 Neerja - Female (Indian Accent)</option>
+              <option value="en-IN-PrabhatNeural" class="bg-slate-900 text-slate-200">🇮🇳 Prabhat - Male (Indian Accent)</option>
+            </optgroup>
+
+            <optgroup label="Arabic (Saudi Arabia)" class="bg-slate-900 text-indigo-400 font-semibold">
+              <option value="ar-SA-ZariyahNeural" class="bg-slate-900 text-slate-200">🇸🇦 Zariyah - Female (Arabic)</option>
+              <option value="ar-SA-HamedNeural" class="bg-slate-900 text-slate-200">🇸🇦 Hamed - Male (Arabic)</option>
+            </optgroup>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="generateVoice()" id="genBtn" class="w-full bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition-all cursor-pointer">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Audio
+      </button>
+
+      <div id="resultContainer" class="hidden mt-6 pt-6 border-t border-white/5 space-y-4">
+        <div class="bg-slate-950/40 rounded-xl p-3 border border-white/5">
+          <audio id="audioPlayer" controls class="w-full accent-indigo-500"></audio>
+        </div>
+        <a id="downloadBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+          <i class="fa-solid fa-cloud-arrow-down"></i> Download MP3
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    async function generateVoice() {
+      const text = document.getElementById("text").value.trim();
+      const voice = document.getElementById("voice_select").value;
+      const genBtn = document.getElementById("genBtn");
+      const resultContainer = document.getElementById("resultContainer");
+      const audioPlayer = document.getElementById("audioPlayer");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      if (!text) {
+        alert("Meharbani karke pehle kuch text likhein!");
+        return;
+      }
+
+      genBtn.disabled = true;
+      genBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Generating Voice...`;
+      resultContainer.classList.add("hidden");
+
+      try {
+        // LOCALHOSt LINK FOR TESTING
+        const BACKEND_URL = "http://tts-gen-ai/tts"; 
+
+        const response = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, voice }) // Humney sirf text aur voice code bheja
+        });
+
+        if (!response.ok) throw new Error("Failed to generate audio");
+
+        const blob = await response.blob();
+        const audioUrl = window.URL.createObjectURL(blob);
+
+        audioPlayer.src = audioUrl;
+        downloadBtn.href = audioUrl;
+        downloadBtn.download = `voice_vip.mp3`;
+
+        resultContainer.classList.remove("hidden");
+      } catch (error) {
+        alert("Kuch masla hua hai. Apne backend server ko check karein.");
+        console.error(error);
+      } finally {
+        genBtn.disabled = false;
+        genBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Audio`;
+      }
+    }
+  </script>
+
+</body>
+</html>
